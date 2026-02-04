@@ -182,6 +182,14 @@
                 <span>Nut</span>
                 <span class="cost">50</span>
             </div>
+            <div class="plant-card" onclick="selectPlant('snowpea')">
+                <span>Snow</span>
+                <span class="cost">175</span>
+            </div>
+            <div class="plant-card" onclick="selectPlant('potatomine')">
+                <span>Mine</span>
+                <span class="cost">25</span>
+            </div>
         </div>
 
     </div>
@@ -221,21 +229,22 @@
         let connections = [];
 
         // --- GRAPHICS GENERATORS ---
+        function createHeadGeo(color) {
+            const g = new THREE.Group();
+            const head = new THREE.Mesh(new THREE.SphereGeometry(1.5, 16, 16), new THREE.MeshStandardMaterial({ color }));
+            head.position.y = 3.5;
+            const snout = new THREE.Mesh(new THREE.CylinderGeometry(1, 0.8, 1.5, 16), new THREE.MeshStandardMaterial({ color }));
+            snout.position.set(0, 3.5, 1.2);
+            snout.rotation.x = Math.PI / 2;
+            g.add(head, snout);
+            return g;
+        }
+
         function createPeashooter() {
             const g = new THREE.Group();
-
             // Stem
-            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 3), new THREE.MeshStandardMaterial({ color: 0x2e7d32 }));
+            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 3), new THREE.MeshStandardMaterial({ color: 0x2e7d32 }));
             stem.position.y = 1.5;
-
-            // Head
-            const head = new THREE.Mesh(new THREE.SphereGeometry(1.5), new THREE.MeshStandardMaterial({ color: 0x4caf50 }));
-            head.position.y = 3.5;
-
-            // Snout
-            const snout = new THREE.Mesh(new THREE.CylinderGeometry(1, 0.8, 1.5), new THREE.MeshStandardMaterial({ color: 0x4caf50 }));
-            snout.position.set(0, 3.5, 1);
-            snout.rotation.x = Math.PI / 2;
 
             // Leaves
             const leafGeo = new THREE.ConeGeometry(0.8, 2, 4);
@@ -249,9 +258,38 @@
                 g.add(l);
             }
 
-            g.add(stem, head, snout);
+            g.add(stem, createHeadGeo(0x4caf50));
             return g;
         }
+
+        function createSnowPea() {
+            const g = new THREE.Group();
+            // Stem
+            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 3), new THREE.MeshStandardMaterial({ color: 0x2e7d32 }));
+            stem.position.y = 1.5;
+            // Ice Crystals at base?
+            const ice = new THREE.Mesh(new THREE.BoxGeometry(2, 0.2, 2), new THREE.MeshStandardMaterial({ color: 0x81d4fa, transparent: true, opacity: 0.8 }));
+            g.add(ice);
+
+            // Blue Head
+            g.add(stem, createHeadGeo(0x29b6f6));
+            return g;
+        }
+
+        function createPotatoMine() {
+            const g = new THREE.Group();
+            // Tubor
+            const body = new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 12, 0, Math.PI * 2, 0, Math.PI / 1.5), new THREE.MeshStandardMaterial({ color: 0x795548 }));
+            body.position.y = 0;
+            g.add(body);
+
+            // Red blinking light
+            const light = new THREE.Mesh(new THREE.SphereGeometry(0.3), new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000 }));
+            light.position.y = 1.2;
+            g.add(light);
+            return g;
+        }
+
 
         function createSunflower() {
             const g = new THREE.Group();
@@ -274,7 +312,7 @@
         }
 
         function createWallnut() {
-            const g = new THREE.Mesh(new THREE.SphereGeometry(1.8), new THREE.MeshStandardMaterial({ color: 0x8d6e63 }));
+            const g = new THREE.Mesh(new THREE.SphereGeometry(1.8, 32, 16), new THREE.MeshStandardMaterial({ color: 0x8d6e63 }));
             g.scale.set(1, 1.4, 1);
             g.position.y = 2.5;
             return g;
@@ -472,7 +510,11 @@
         // --- HOST ACTIONS ---
         function attemptPlace(type, gx, gz) {
             // Validate Logic
-            const cost = { 'peashooter': 100, 'sunflower': 50, 'wallnut': 50 }[type];
+            const cost = {
+                'peashooter': 100, 'sunflower': 50, 'wallnut': 50,
+                'snowpea': 175, 'potatomine': 25
+            }[type];
+
             if (state.sun < cost) {
                 console.log("Not enough sun");
                 return; // Fail
@@ -482,13 +524,20 @@
                 return; // Fail
             }
 
+            // HP Values
+            const hp = {
+                'peashooter': 100, 'sunflower': 50, 'wallnut': 400,
+                'snowpea': 150, 'potatomine': 50
+            }[type];
+
             // Success
             state.sun -= cost;
             state.plants.push({
                 id: Math.random().toString(36),
                 type, gx, gz,
-                hp: 100,
-                lastAction: 0
+                hp: hp,
+                lastAction: 0,
+                plantTime: performance.now() // For mines
             });
             updateHUD();
             broadcastState();
@@ -534,9 +583,12 @@
             activeTool = t;
             document.querySelectorAll('.plant-card').forEach(e => e.classList.remove('selected'));
             // Find specific card (lazy select)
-            if (t === 'peashooter') document.querySelectorAll('.plant-card')[0].classList.add('selected');
-            if (t === 'sunflower') document.querySelectorAll('.plant-card')[1].classList.add('selected');
-            if (t === 'wallnut') document.querySelectorAll('.plant-card')[2].classList.add('selected');
+            const cards = document.querySelectorAll('.plant-card');
+            if (t === 'peashooter') cards[0].classList.add('selected');
+            if (t === 'sunflower') cards[1].classList.add('selected');
+            if (t === 'wallnut') cards[2].classList.add('selected');
+            if (t === 'snowpea') cards[3].classList.add('selected');
+            if (t === 'potatomine') cards[4].classList.add('selected');
         }
 
         // --- LOOPS ---
@@ -577,55 +629,76 @@
 
             // 1. PLANTS
             state.plants.forEach(p => {
-                if (time - p.lastAction < 1500) return; // Cooldown
+                const pz = (p.gz - CONFIG.GRID_H / 2 + 0.5) * CONFIG.TILE_SIZE;
+                const px = (p.gx - CONFIG.GRID_W / 2 + 0.5) * CONFIG.TILE_SIZE;
 
-                if (p.type === 'peashooter') {
-                    // Check lane
-                    const pz = (p.gz - CONFIG.GRID_H / 2 + 0.5) * CONFIG.TILE_SIZE;
-                    const px = (p.gx - CONFIG.GRID_W / 2 + 0.5) * CONFIG.TILE_SIZE;
+                if (p.type === 'potatomine') {
+                    if (!p.plantTime) { p.plantTime = time; p.armed = false; }
+                    if (time - p.plantTime > 14000) p.armed = true; // 14s arm time
 
+                    if (p.armed) {
+                        const hitZ = state.zombies.find(z => Math.abs(z.x - px) < 2 && Math.abs(z.z - pz) < 1);
+                        if (hitZ) {
+                            hitZ.hp -= 1800; // Instakill
+                            p.hp = 0; // Suicide
+                        }
+                    }
+                    return;
+                }
+
+                if (time - p.lastAction < 1500) return; // Cooldown for shooters
+
+                if (p.type === 'peashooter' || p.type === 'snowpea') {
                     const hasTarget = state.zombies.some(z => Math.abs(z.z - pz) < 1 && z.x > px);
                     if (hasTarget) {
                         state.projectiles.push({
                             id: Math.random().toString(),
                             x: px, z: pz,
-                            vx: 30
+                            vx: 30,
+                            isFrozen: p.type === 'snowpea'
                         });
                         p.lastAction = time;
                     }
                 } else if (p.type === 'sunflower') {
-                    if (time - p.lastAction > 5000) { // 5s for sunflower
+                    if (time - p.lastAction > 5000) {
                         state.suns.push({
                             id: Math.random().toString(),
-                            x: (p.gx - CONFIG.GRID_W / 2 + 0.5) * CONFIG.TILE_SIZE,
-                            y: 5,
-                            z: (p.gz - CONFIG.GRID_H / 2 + 0.5) * CONFIG.TILE_SIZE
+                            x: px, y: 5, z: pz
                         });
                         p.lastAction = time;
                     }
                 }
             });
 
+            // Clean dead plants (mines)
+            state.plants = state.plants.filter(p => p.hp > 0);
+
             // 2. ZOMBIES
             state.zombies.forEach(z => {
+                // Decay freeze
+                if (z.frozen && time > z.frozenUntil) z.frozen = false;
+                const speedMult = z.frozen ? 0.5 : 1.0;
+
                 // Check eat
                 const myLaneParams = state.plants.filter(p => {
                     const pz = (p.gz - CONFIG.GRID_H / 2 + 0.5) * CONFIG.TILE_SIZE;
                     return Math.abs(pz - z.z) < 1;
                 });
 
+                // Allow walking over Unarmed mines
                 const target = myLaneParams.find(p => {
+                    if (p.type === 'potatomine' && !p.armed) return false;
                     const px = (p.gx - CONFIG.GRID_W / 2 + 0.5) * CONFIG.TILE_SIZE;
-                    return Math.abs(z.x - px) < 4 && z.x > px; // Close and to the right
+                    return Math.abs(z.x - px) < 4 && z.x > px;
                 });
 
                 if (target) {
-                    target.hp -= dt * 30; // 30 DPS
+                    target.hp -= dt * 30;
                     if (target.hp <= 0) {
                         state.plants = state.plants.filter(x => x !== target);
                     }
                 } else {
-                    z.x -= dt * 5; // Move
+                    z.x -= dt * 5 * speedMult; // Move
                 }
             });
 
@@ -638,6 +711,11 @@
                 const hitZ = state.zombies.find(z => Math.abs(z.x - p.x) < 2 && Math.abs(z.z - p.z) < 1);
                 if (hitZ) {
                     hitZ.hp -= 25;
+                    if (p.isFrozen) {
+                        hitZ.frozen = true;
+                        hitZ.frozenUntil = time + 5000; // 5s freeze
+                        // Visual feedback handled in renderer if we sync it
+                    }
                     state.projectiles.splice(i, 1);
                     if (hitZ.hp <= 0) {
                         state.zombies = state.zombies.filter(x => x !== hitZ);
@@ -645,8 +723,7 @@
                     }
                     continue;
                 }
-
-                if (p.x > 100) state.projectiles.splice(i, 1); // Despawn
+                if (p.x > 100) state.projectiles.splice(i, 1);
             }
 
             // Sync physics/logic
@@ -671,7 +748,8 @@
             'sunflower': new THREE.MeshStandardMaterial({ color: 0xFFD700 }),
             'wallnut': new THREE.MeshStandardMaterial({ color: 0x8D6E63 })
         };
-        const matProjectile = new THREE.MeshStandardMaterial({ color: 0x00FFFF });
+        const matProjectileGreen = new THREE.MeshStandardMaterial({ color: 0x00FF00, emissive: 0x004400 });
+        const matProjectileBlue = new THREE.MeshStandardMaterial({ color: 0x00FFFF, emissive: 0x0044FF });
         const matZombie = new THREE.MeshStandardMaterial({ color: 0x5D4037 });
         const matSun = new THREE.MeshBasicMaterial({ color: 0xFFFF00 });
 
@@ -686,15 +764,19 @@
                     if (!mesh) {
                         // Create
                         if (type === 'plant') {
-                            mesh = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 6), matPlants[ent.type]);
+                            if (ent.type === 'peashooter') mesh = createPeashooter();
+                            else if (ent.type === 'sunflower') mesh = createSunflower();
+                            else if (ent.type === 'wallnut') mesh = createWallnut();
+                            else if (ent.type === 'snowpea') mesh = createSnowPea();
+                            else if (ent.type === 'potatomine') mesh = createPotatoMine();
                         } else if (type === 'zombie') {
-                            mesh = new THREE.Mesh(new THREE.BoxGeometry(3, 8, 3), matZombie);
+                            mesh = createZombie();
                         } else if (type === 'sun') {
                             mesh = new THREE.Mesh(new THREE.SphereGeometry(2), matSun);
                             mesh.userData.type = 'SUN';
                             mesh.userData.id = ent.id;
                         } else if (type === 'projectile') {
-                            mesh = new THREE.Mesh(new THREE.SphereGeometry(0.5), matProjectile);
+                            mesh = new THREE.Mesh(new THREE.SphereGeometry(0.5), ent.isFrozen ? matProjectileBlue : matProjectileGreen);
                         }
                         scene.add(mesh);
                         objects.meshMap.set(ent.id, mesh);
@@ -704,9 +786,24 @@
                     if (type === 'plant') {
                         const px = (ent.gx - CONFIG.GRID_W / 2 + 0.5) * CONFIG.TILE_SIZE;
                         const pz = (ent.gz - CONFIG.GRID_H / 2 + 0.5) * CONFIG.TILE_SIZE;
-                        mesh.position.set(px, 3, pz);
+                        mesh.position.set(px, 0, pz);
+
+                        // Arming visual for mine
+                        if (ent.type === 'potatomine') {
+                            // Assuming red light is child 1
+                            if (mesh.children[1]) {
+                                const since = performance.now() - (ent.plantTime || 0); // Client perf now might differ, this is visual only approximation or we sync
+                                // Actually better to sync 'armed' state.
+                                // For now just blink?
+                                if (!ent.armed) mesh.children[1].material.color.setHex(Date.now() % 500 < 250 ? 0xff0000 : 0x550000);
+                                else mesh.children[1].material.color.setHex(0xff0000);
+                            }
+                        }
+
                     } else if (type === 'zombie') {
-                        mesh.position.set(ent.x, 4, ent.z);
+                        mesh.position.set(ent.x, 0, ent.z);
+                        // Blue tint if frozen? Hard with group materials.
+                        // Maybe just slow anim.
                     } else if (type === 'sun') {
                         mesh.position.set(ent.x, ent.y, ent.z);
                     } else if (type === 'projectile') {
