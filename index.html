@@ -149,20 +149,145 @@
             <div id="debug-msg" style="color:red; background:black; padding:5px; height: fit-content;">State: Init</div>
         </div>
 
-        <!-- CENTER MENUS -->
-        <div id="start-menu" class="center-menu interactive">
-            <h1 style="color:#4caf50; font-size: 50px; margin:0;">PvZ 3D</h1>
-            <p style="color:#ccc;">Rebuilt for Stability</p>
-            <input type="text" id="nickname" placeholder="Your Nickname" value="Player 1"
-                style="padding:10px; margin-bottom: 20px; display:block; width: 80%; margin-left: auto; margin-right: auto;">
+        <!-- NAME INPUT OVERLAY (Positions on top of 3D Sign) -->
+        <input type="text" id="nickname" value="Player 1" style="position: absolute; top: 15%; left: 15%; transform: rotate(-5deg);
+                   background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjOGQ2ZTYzIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHRQPSIxMDAiLz48L3N2Zz4=');
+                   background-size: cover; border: 4px solid #3e2723; padding: 10px; 
+                   color: #ffeb3b; font-family: 'Courier New', cursive; font-weight: bold; font-size: 20px;
+                   text-align: center; width: 250px; box-shadow: 5px 5px 10px rgba(0,0,0,0.5); z-index: 100;"
+            onclick="event.stopPropagation()">
 
-            <button onclick="startGame(true)">START GAME (HOST)</button>
-            <br><br>
-            <input type="text" id="host-id" placeholder="Host ID to Join" style="padding:10px;">
-            <button onclick="startGame(false)" style="background:#444; font-size:16px;">Join Game</button>
+        <!-- LEVEL SELECTOR -->
+        <div id="level-select-screen" class="center-menu interactive hidden"
+            style="background: rgba(0,0,0,0.8); border: none; padding: 0; background-color: transparent; box-shadow: none;">
+
+            <!-- Stone Frame Container -->
+            <div
+                style="background: #546e7a; padding: 20px; border: 15px solid #37474f; border-radius: 20px; box-shadow: 10px 10px 30px rgba(0,0,0,0.5); width: 500px; margin: auto;">
+                <h2
+                    style="color:#a5d6a7; font-family: 'Courier New', serif; text-transform:uppercase; margin-top:0; text-shadow: 2px 2px #000;">
+                    Select Level</h2>
+
+                <div style="display:flex; gap:15px; justify-content: center;">
+                    <div class="level-card" onclick="selectLevel('day')"
+                        style="background: #81C784; padding:20px; border:4px solid #2e7d32; cursor:pointer; width: 150px; transition: transform 0.2s;">
+                        <h3 style="margin:0; color: #1b5e20;">Day</h3>
+                        <p style="font-size:12px; color: #1b5e20;">Standard Lawn</p>
+                    </div>
+                    <div class="level-card" onclick="selectLevel('night')"
+                        style="background: #3f51b5; padding:20px; border:4px solid #1a237e; cursor:pointer; color:white; width: 150px; transition: transform 0.2s;">
+                        <h3 style="margin:0;">Night</h3>
+                        <p style="font-size:12px;">No Sun from Sky</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stone Slab Back Button -->
+            <button onclick="hideLevelSelect()" style="
+                    margin-top: 30px;
+                    background: #90a4ae;
+                    border: 4px solid #546e7a;
+                    border-bottom-width: 8px;
+                    color: #263238;
+                    font-family: 'Courier New', sans-serif;
+                    font-weight: 900;
+                    font-size: 28px;
+                    padding: 10px 40px;
+                    transform: perspective(200px) rotateX(10deg);
+                    cursor: pointer;
+                    text-shadow: 1px 1px 0px rgba(255,255,255,0.4);
+                    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+                    clip-path: polygon(10% 0, 90% 0, 100% 100%, 0% 100%);
+                    width: 200px;
+                " onmouseover="this.style.transform='perspective(200px) rotateX(0deg) translateY(2px)'"
+                onmouseout="this.style.transform='perspective(200px) rotateX(10deg)'">
+                BACK
+            </button>
         </div>
 
-        <!-- PLANT BAR -->
+        <!-- GAME OVER -->
+        <div id="game-over-screen" class="center-menu interactive hidden" style="border-color: red;">
+            <h1 style="color:red; font-size:60px;">GAME OVER</h1>
+            <p style="font-size:24px;">The Zombies Ate Your Brains!</p>
+            <button onclick="location.reload()">Return to Menu</button>
+        </div>
+
+        <!-- SEED CHOOSER -->
+        <div id="seed-chooser-screen" class="center-menu interactive hidden"
+            style="width: 800px; height: 600px; padding: 0; background: #5d4037; border: 4px solid #3e2723; border-radius: 10px; display: flex; flex-direction: column;">
+
+            <!-- Top Bar: Selected -->
+            <div
+                style="height: 120px; background: #8d6e63; border-bottom: 4px solid #3e2723; display: flex; align-items: center; padding: 0 20px;">
+                <div
+                    style="background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjZmZjMTA3Ij48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIvPjwvc3ZnPg==') no-repeat center; width: 80px; height: 80px; margin-right: 20px;">
+                </div>
+                <div id="selected-seeds-container" style="display: flex; gap: 5px;">
+                    <!-- JS fills this -->
+                </div>
+            </div>
+
+            <!-- Main Library -->
+            <div style="flex: 1; padding: 20px; background: #6d4c41; overflow-y: auto;">
+                <h3 style="color: #d7ccc8; margin-top: 0; border-bottom: 2px solid #8d6e63;">CHOOSE YOUR PLANTS</h3>
+                <div id="seed-library-container" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <!-- JS fills this -->
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div
+                style="height: 80px; background: #4e342e; border-top: 4px solid #3e2723; display: flex; justify-content: center; align-items: center;">
+                <button onclick="confirmSeeds()"
+                    style="background: #4caf50; border: 4px solid #1b5e20; font-size: 24px; padding: 10px 40px; box-shadow: 0 5px 0 #1b5e20;">LET'S
+                    ROCK!</button>
+            </div>
+        </div>
+
+        <!-- ALMANAC SCREEN -->
+        <div id="almanac-screen" class="center-menu interactive hidden"
+            style="width: 900px; height: 600px; background: #d7ccc8; border: 10px solid #5d4037; border-radius: 20px; display: flex; padding: 0; box-shadow: 0 0 50px rgba(0,0,0,0.8);">
+
+            <!-- Left Page: Index -->
+            <div
+                style="width: 50%; border-right: 2px solid #a1887f; padding: 20px; display: flex; flex-direction: column;">
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: center;">
+                    <button onclick="switchAlmanacTab('plants')"
+                        style="background: #4caf50; padding: 10px; width: 120px;">PLANTS</button>
+                    <button onclick="switchAlmanacTab('zombies')"
+                        style="background: #5d4037; padding: 10px; width: 120px;">ZOMBIES</button>
+                </div>
+                <div id="almanac-grid"
+                    style="display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; overflow-y: auto;">
+                    <!-- Filled by JS -->
+                </div>
+                <button onclick="hideAlmanac()" style="margin-top: auto; background: #8d6e63;">Close Book</button>
+            </div>
+
+            <!-- Right Page: Details -->
+            <div
+                style="width: 50%; padding: 30px; background: #efebe9; border-radius: 0 10px 10px 0; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <h2 id="almanac-title" style="margin: 0 0 20px 0; font-family: 'Courier New'; color: #3e2723;">Select
+                    Entry</h2>
+
+                <div id="almanac-preview"
+                    style="width: 150px; height: 150px; background: #ccc; margin-bottom: 20px; border: 4px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;">
+                    <!-- Icon/3D preview -->
+                </div>
+
+                <div id="almanac-stats"
+                    style="background: #d7ccc8; padding: 10px; border-radius: 5px; width: 100%; margin-bottom: 15px; font-weight: bold; color: #4e342e;">
+                    <!-- Stats -->
+                </div>
+
+                <p id="almanac-desc"
+                    style="font-family: 'Times New Roman', serif; font-size: 18px; line-height: 1.4; color: #3e2723;">
+                    Welcome to the Suburban Almanac!<br>Select an icon to learn more.
+                </p>
+            </div>
+        </div>
+
+        <!-- PLANT BAR (Generated Dynamically now) -->
         <div id="game-controls" class="plant-bar interactive hidden">
             <!-- Left side: Player List -->
             <div id="player-list-hud" style="color: white; font-size: 12px; margin-right: 20px; text-align: left;">
@@ -170,26 +295,7 @@
                 <ul id="players-ul" style="padding-left: 15px; margin: 0;"></ul>
             </div>
 
-            <div class="plant-card selected" onclick="selectPlant('peashooter')">
-                <span>Pea</span>
-                <span class="cost">100</span>
-            </div>
-            <div class="plant-card" onclick="selectPlant('sunflower')">
-                <span>Sun</span>
-                <span class="cost">50</span>
-            </div>
-            <div class="plant-card" onclick="selectPlant('wallnut')">
-                <span>Nut</span>
-                <span class="cost">50</span>
-            </div>
-            <div class="plant-card" onclick="selectPlant('snowpea')">
-                <span>Snow</span>
-                <span class="cost">175</span>
-            </div>
-            <div class="plant-card" onclick="selectPlant('potatomine')">
-                <span>Mine</span>
-                <span class="cost">25</span>
-            </div>
+            <div id="hud-slots" style="display:flex; gap:10px;"></div>
         </div>
 
     </div>
@@ -207,22 +313,70 @@
         };
 
         let state = {
+            scene: 'MENU', // MENU, SELECT, SEEDS, GAME
             sun: 150,
             score: 0,
             plants: [],
             zombies: [],
             projectiles: [],
             suns: [],
-            active: false,
             isHost: true,
             players: []
         };
 
         const objects = {
             meshMap: new Map(), // ID -> Mesh
-            tiles: [] // Array of meshes
+            tiles: [], // Array of meshes
+            menuButtons: []
         };
 
+        const ALL_PLANTS = [
+            {
+                id: 'peashooter', name: 'Peashooter', cost: 100, color: '#4caf50',
+                desc: "Peashooters are your first line of defense. They shoot peas at attacking zombies.",
+                flavor: "Peashooter says: 'I just wanna do my job. Which is shooting peas.'",
+                stats: "Damage: Normal<br>Recharge: Fast"
+            },
+
+            {
+                id: 'sunflower', name: 'Sunflower', cost: 50, color: '#ffd700',
+                desc: "Sunflowers are essential for you to produce extra sun. Try planting as many as you can!",
+                flavor: "Sunflower can't help but dance to the beat. What beat? The beat of life.",
+                stats: "Sun Production: Normal<br>Recharge: Fast"
+            },
+
+            {
+                id: 'wallnut', name: 'Wall-nut', cost: 50, color: '#8d6e63',
+                desc: "Wall-nuts have hard shells which you can use to protect your other plants.",
+                flavor: "Wall-nut has a hard shell, but he's a softie inside. He likes bowling.",
+                stats: "Toughness: High<br>Recharge: Slow"
+            },
+
+            {
+                id: 'potatomine', name: 'Potato Mine', cost: 25, color: '#795548',
+                desc: "Potato Mines explode on contact, but they take time to arm themselves.",
+                flavor: "SPUDOW! That's the noise he makes. He's been practicing it all morning.",
+                stats: "Damage: Massive<br>Usage: Single Use, Delayed Arming"
+            },
+
+            {
+                id: 'snowpea', name: 'Snow Pea', cost: 175, color: '#29b6f6',
+                desc: "Snow Peas fire frozen peas that damage and slow the enemy.",
+                flavor: "People tell Snow Pea he's 'cool'. He just tells them to 'chill out'.",
+                stats: "Damage: Normal<br>Special: Slows Zombies"
+            }
+        ];
+
+        const ALL_ZOMBIES = [
+            {
+                id: 'zombie', name: 'Regular Zombie', color: '#5d4037',
+                desc: "This zombie loves brains. Inventive, isn't he?",
+                flavor: "He has a job application for 'Brain Eater' but he forgot how to write.",
+                stats: "Toughness: Low<br>Speed: Basic"
+            }
+        ];
+
+        let selectedDeck = ['peashooter', 'sunflower', 'wallnut']; // Default
         let activeTool = 'peashooter';
         let myName = "Player";
         let peer, conn;
@@ -237,123 +391,382 @@
             snout.position.set(0, 3.5, 1.2);
             snout.rotation.x = Math.PI / 2;
             g.add(head, snout);
+            g.name = 'headGroup'; // Name for bobbing
             return g;
         }
 
         function createPeashooter() {
             const g = new THREE.Group();
-            // Stem
-            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 3), new THREE.MeshStandardMaterial({ color: 0x2e7d32 }));
-            stem.position.y = 1.5;
 
-            // Leaves
-            const leafGeo = new THREE.ConeGeometry(0.8, 2, 4);
-            const leafMat = new THREE.MeshStandardMaterial({ color: 0x2e7d32 });
+            const greenMat = new THREE.MeshStandardMaterial({ color: 0x76b041 }); // Pea Green
+            const stemMat = new THREE.MeshStandardMaterial({ color: 0x558b2f });
+
+            // Stem
+            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 2.5), stemMat);
+            stem.position.y = 1.25;
+
+            // Base Leaves
+            const leafGeo = new THREE.SphereGeometry(0.8, 8, 8);
+            leafGeo.scale(1, 0.2, 1);
             for (let i = 0; i < 4; i++) {
-                const l = new THREE.Mesh(leafGeo, leafMat);
-                l.position.y = 0.5;
+                const l = new THREE.Mesh(leafGeo, greenMat);
+                l.position.y = 0.2;
                 l.rotation.y = (Math.PI / 2) * i;
-                l.rotation.z = Math.PI / 3;
-                l.translateX(0.5);
+                l.translateX(0.6);
+                l.rotation.z = 0.2;
                 g.add(l);
             }
 
-            g.add(stem, createHeadGeo(0x4caf50));
+            // Head Group (for animation)
+            const headGroup = new THREE.Group();
+            headGroup.position.y = 2.8;
+            headGroup.name = 'headGroup';
+
+            // Main Head
+            const head = new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 16), greenMat);
+
+            // Snout (Trumpet shape)
+            const snout = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.4, 1), greenMat);
+            snout.rotation.x = Math.PI / 2;
+            snout.position.z = 1.1;
+
+            // Back Leaf (Tail)
+            const backLeaf = new THREE.Mesh(new THREE.SphereGeometry(0.4), greenMat);
+            backLeaf.scale.set(1, 0.5, 1);
+            backLeaf.position.set(0, 0.8, -0.8);
+            backLeaf.rotation.x = 0.5;
+
+            // Eyes
+            const eyeGeo = new THREE.SphereGeometry(0.25);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+            const shineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+            const lEye = new THREE.Mesh(eyeGeo, eyeMat);
+            lEye.position.set(-0.4, 0.4, 0.8);
+            const lShine = new THREE.Mesh(new THREE.SphereGeometry(0.08), shineMat);
+            lShine.position.set(-0.1, 0.1, 0.2);
+            lEye.add(lShine);
+
+            const rEye = new THREE.Mesh(eyeGeo, eyeMat);
+            rEye.position.set(0.4, 0.4, 0.8);
+            const rShine = new THREE.Mesh(new THREE.SphereGeometry(0.08), shineMat);
+            rShine.position.set(-0.1, 0.1, 0.2);
+            rEye.add(rShine);
+
+            headGroup.add(head, snout, backLeaf, lEye, rEye);
+            g.add(stem, headGroup);
             return g;
         }
 
         function createSnowPea() {
             const g = new THREE.Group();
+
+            const blueMat = new THREE.MeshStandardMaterial({ color: 0x4fc3f7 }); // Icy Blue
+            const stemMat = new THREE.MeshStandardMaterial({ color: 0x558b2f });
+
             // Stem
-            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 3), new THREE.MeshStandardMaterial({ color: 0x2e7d32 }));
-            stem.position.y = 1.5;
-            // Ice Crystals at base?
-            const ice = new THREE.Mesh(new THREE.BoxGeometry(2, 0.2, 2), new THREE.MeshStandardMaterial({ color: 0x81d4fa, transparent: true, opacity: 0.8 }));
+            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 2.5), stemMat);
+            stem.position.y = 1.25;
+
+            // Ice Crystals at base
+            const ice = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.2, 1.8), new THREE.MeshStandardMaterial({ color: 0xe1f5fe, transparent: true, opacity: 0.8 }));
             g.add(ice);
 
-            // Blue Head
-            g.add(stem, createHeadGeo(0x29b6f6));
+            // Head Group
+            const headGroup = new THREE.Group();
+            headGroup.position.y = 2.8;
+            headGroup.name = 'headGroup';
+
+            // Main Head
+            const head = new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 16), blueMat);
+
+            // Snout
+            const snout = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.4, 1), blueMat);
+            snout.rotation.x = Math.PI / 2;
+            snout.position.z = 1.1;
+
+            // Ice Crystal Back
+            const backCrystal = new THREE.Mesh(new THREE.ConeGeometry(0.4, 1, 4), new THREE.MeshStandardMaterial({ color: 0x81d4fa }));
+            backCrystal.rotation.x = -Math.PI / 4;
+            backCrystal.position.set(0, 0.8, -0.8);
+
+            // Eyes
+            const eyeGeo = new THREE.SphereGeometry(0.25);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+
+            const lEye = new THREE.Mesh(eyeGeo, eyeMat);
+            lEye.position.set(-0.4, 0.4, 0.8);
+            const rEye = new THREE.Mesh(eyeGeo, eyeMat);
+            rEye.position.set(0.4, 0.4, 0.8);
+
+            headGroup.add(head, snout, backCrystal, lEye, rEye);
+            g.add(stem, headGroup);
             return g;
         }
 
         function createPotatoMine() {
             const g = new THREE.Group();
-            // Tubor
-            const body = new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 12, 0, Math.PI * 2, 0, Math.PI / 1.5), new THREE.MeshStandardMaterial({ color: 0x795548 }));
-            body.position.y = 0;
-            g.add(body);
 
-            // Red blinking light
-            const light = new THREE.Mesh(new THREE.SphereGeometry(0.3), new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000 }));
-            light.position.y = 1.2;
+            // Body: Semi-sphere
+            const bodyGeo = new THREE.SphereGeometry(1.2, 16, 12, 0, Math.PI * 2, 0, Math.PI / 1.8);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x8d6e63 }); // Potato Brown
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.rotation.x = Math.PI; // Flip so flat side is down (not quite, theta length handles it)
+            // Actually, phiLength is horizontal. thetaLength is vertical. 
+            // Default 0..PI. We want 0..PI/1.5. Top is 0. 
+            // We want it sitting on ground. 
+            // Let's just use scale y.
+            const potato = new THREE.Mesh(new THREE.SphereGeometry(1.4, 16, 16), bodyMat);
+            potato.scale.set(1, 0.6, 1);
+            potato.position.y = 0.5;
+            g.add(potato);
+
+            // Dirt Base (Clumps)
+            const dirtMat = new THREE.MeshStandardMaterial({ color: 0x5d4037 });
+            for (let i = 0; i < 8; i++) {
+                const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.4), dirtMat);
+                const angle = (i / 8) * Math.PI * 2;
+                rock.position.set(Math.cos(angle) * 1.2, 0.2, Math.sin(angle) * 1.2);
+                rock.rotation.set(Math.random(), Math.random(), Math.random());
+                g.add(rock);
+            }
+
+            // Face
+            const eyeGeo = new THREE.SphereGeometry(0.3);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+            const shineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+            const lEye = new THREE.Mesh(eyeGeo, eyeMat);
+            lEye.position.set(-0.5, 0.8, 1.1);
+            lEye.add(new THREE.Mesh(new THREE.SphereGeometry(0.1), shineMat)).position.set(-0.1, 0.1, 0.25);
+            g.add(lEye);
+
+            const rEye = new THREE.Mesh(eyeGeo, eyeMat);
+            rEye.position.set(0.5, 0.8, 1.1);
+            rEye.add(new THREE.Mesh(new THREE.SphereGeometry(0.1), shineMat)).position.set(-0.1, 0.1, 0.25);
+            g.add(rEye);
+
+            const tooth = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.4, 0.1), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+            tooth.position.set(0, 0.4, 1.25);
+            g.add(tooth);
+
+            // Antenna
+            const metal = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 1.5), new THREE.MeshStandardMaterial({ color: 0x9e9e9e }));
+            metal.position.y = 1.5;
+            g.add(metal);
+
+            const light = new THREE.Mesh(new THREE.SphereGeometry(0.4), new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000 }));
+            light.position.y = 2.2;
+            light.name = 'antennaLight';
             g.add(light);
+
             return g;
         }
 
 
         function createSunflower() {
             const g = new THREE.Group();
-            // Stem
-            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 3), new THREE.MeshStandardMaterial({ color: 0x2e7d32 }));
-            stem.position.y = 1.5;
 
-            // Face
-            const face = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 0.5), new THREE.MeshStandardMaterial({ color: 0x3e2723 }));
-            face.position.set(0, 3.5, 0.1);
+            // Stem
+            const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 2.5), new THREE.MeshStandardMaterial({ color: 0x558b2f }));
+            stem.position.y = 1.25;
+
+            // Base Leaves
+            const leafGeo = new THREE.SphereGeometry(0.8, 8, 8);
+            leafGeo.scale(1, 0.2, 1);
+            for (let i = 0; i < 4; i++) {
+                const l = new THREE.Mesh(leafGeo, new THREE.MeshStandardMaterial({ color: 0x558b2f }));
+                l.position.y = 0.2;
+                l.rotation.y = (Math.PI / 2) * i;
+                l.translateX(0.6);
+                l.rotation.z = 0.2;
+                g.add(l);
+            }
+
+            const faceGroup = new THREE.Group();
+            faceGroup.name = 'faceGroup';
+            faceGroup.position.set(0, 3, 0); // Head height
+
+            // Brown Face
+            const faceMat = new THREE.MeshStandardMaterial({ color: 0x8d6e63 });
+            const face = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.5, 16), faceMat);
             face.rotation.x = Math.PI / 2;
 
             // Petals
-            const petals = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 2.5, 0.2), new THREE.MeshStandardMaterial({ color: 0xffeb3b }));
-            petals.position.set(0, 3.5, -0.1);
-            petals.rotation.x = Math.PI / 2;
+            const petalGeo = new THREE.SphereGeometry(0.5, 8, 8);
+            petalGeo.scale(1, 1, 0.3); // Flatten to petal shape
+            const petalMat = new THREE.MeshStandardMaterial({ color: 0xffeb3b });
 
-            g.add(stem, face, petals);
+            const petalRing = new THREE.Group();
+            const numPetals = 12;
+            for (let i = 0; i < numPetals; i++) {
+                const p = new THREE.Mesh(petalGeo, petalMat);
+                const angle = (i / numPetals) * Math.PI * 2;
+                p.position.set(Math.cos(angle) * 1.4, Math.sin(angle) * 1.4, -0.2);
+                p.rotation.z = angle;
+                petalRing.add(p);
+            }
+
+            // Face Details (Eyes/Mouth simple)
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+            const lEye = new THREE.Mesh(new THREE.SphereGeometry(0.15), eyeMat);
+            lEye.position.set(-0.4, 0.3, 0.3);
+            const rEye = new THREE.Mesh(new THREE.SphereGeometry(0.15), eyeMat);
+            rEye.position.set(0.4, 0.3, 0.3);
+
+            const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.4, 0.05, 4, 8, Math.PI), eyeMat);
+            mouth.rotation.z = Math.PI;
+            mouth.position.set(0, -0.2, 0.3);
+
+            faceGroup.add(petalRing, face, lEye, rEye, mouth);
+            g.add(stem, faceGroup);
             return g;
         }
 
         function createWallnut() {
-            const g = new THREE.Mesh(new THREE.SphereGeometry(1.8, 32, 16), new THREE.MeshStandardMaterial({ color: 0x8d6e63 }));
-            g.scale.set(1, 1.4, 1);
-            g.position.y = 2.5;
+            const g = new THREE.Group();
+
+            const nutMat = new THREE.MeshStandardMaterial({ color: 0xa1887f });
+
+            // Body (Animated Group)
+            const bodyGroup = new THREE.Group();
+            bodyGroup.name = 'bodyGroup';
+
+            // Main Shape (Deformed Sphere)
+            const body = new THREE.Mesh(new THREE.SphereGeometry(1.6, 24, 24), nutMat);
+            body.scale.set(1, 1.4, 1);
+            body.position.y = 2.2;
+            bodyGroup.add(body);
+
+            // Bumps
+            for (let i = 0; i < 5; i++) {
+                const bump = new THREE.Mesh(new THREE.SphereGeometry(0.5), nutMat);
+                bump.position.set((Math.random() - 0.5) * 2, Math.random() * 3 + 0.5, (Math.random() - 0.5) * 2);
+                bump.scale.set(1, 0.5, 1);
+                // bodyGroup.add(bump); // Actually keep it clean for now
+            }
+
+            // Eyes
+            const eyeGroup = new THREE.Group();
+            eyeGroup.position.set(0, 3, 1.3);
+            eyeGroup.rotation.x = -0.2;
+
+            const eyeGeo = new THREE.SphereGeometry(0.5);
+            const scleraMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const pupilMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+
+            const lEye = new THREE.Mesh(eyeGeo, scleraMat);
+            lEye.position.set(-0.6, 0, 0);
+            const lPupil = new THREE.Mesh(new THREE.SphereGeometry(0.12), pupilMat);
+            lPupil.position.set(0, 0, 0.45);
+            lEye.add(lPupil);
+
+            const rEye = new THREE.Mesh(eyeGeo, scleraMat);
+            rEye.position.set(0.6, 0, 0);
+            const rPupil = new THREE.Mesh(new THREE.SphereGeometry(0.12), pupilMat);
+            rPupil.position.set(0, 0, 0.45);
+            rEye.add(rPupil);
+
+            eyeGroup.add(lEye, rEye);
+            bodyGroup.add(eyeGroup);
+
+            // Mouth
+            const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.05, 4, 8, 2.5), new THREE.MeshBasicMaterial({ color: 0x3e2723 }));
+            mouth.rotation.z = 2; // Smile
+            mouth.position.set(0, 2.2, 1.5);
+            mouth.rotation.x = -0.2;
+            bodyGroup.add(mouth);
+
+            g.add(bodyGroup);
             return g;
         }
 
         function createZombie() {
             const g = new THREE.Group();
 
-            // Legs
-            const lLeg = new THREE.Mesh(new THREE.BoxGeometry(1, 3, 1), new THREE.MeshStandardMaterial({ color: 0x37474f }));
+            const skinMat = new THREE.MeshStandardMaterial({ color: 0x9DBB61 }); // Zombie Green
+            const coatMat = new THREE.MeshStandardMaterial({ color: 0x5D4037 }); // Brown Coat - darker
+            const pantsMat = new THREE.MeshStandardMaterial({ color: 0x3949AB }); // Blue Pants
+            const shoeMat = new THREE.MeshStandardMaterial({ color: 0x3E2723 }); // Dark Brown Shoes
+
+            // Left Leg
+            const lLeg = new THREE.Mesh(new THREE.BoxGeometry(0.9, 3, 1), pantsMat);
             lLeg.position.set(-0.6, 1.5, 0);
-            const rLeg = new THREE.Mesh(new THREE.BoxGeometry(1, 3, 1), new THREE.MeshStandardMaterial({ color: 0x37474f }));
+
+            // Right Leg
+            const rLeg = new THREE.Mesh(new THREE.BoxGeometry(0.9, 3, 1), pantsMat);
             rLeg.position.set(0.6, 1.5, 0);
 
-            // Torso
-            const torso = new THREE.Mesh(new THREE.BoxGeometry(2.4, 3, 1.2), new THREE.MeshStandardMaterial({ color: 0x5d4037 }));
-            torso.position.set(0, 4.5, 0);
+            // Shoes
+            const lShoe = new THREE.Mesh(new THREE.BoxGeometry(1, 0.8, 2), shoeMat);
+            lShoe.position.set(-0.6, 0.4, 0.5);
+            const rShoe = new THREE.Mesh(new THREE.BoxGeometry(1, 0.8, 2), shoeMat);
+            rShoe.position.set(0.6, 0.4, 0.5);
+
+            // Torso (Shirt)
+            const torso = new THREE.Mesh(new THREE.BoxGeometry(2.2, 3.2, 1.2), new THREE.MeshStandardMaterial({ color: 0xD7CCC8 })); // Dirty Shirt
+            torso.position.set(0, 4.6, 0);
+
+            // Coat (Open jacket style - Back and Sides)
+            const coatBack = new THREE.Mesh(new THREE.BoxGeometry(2.4, 3.2, 0.2), coatMat);
+            coatBack.position.set(0, 4.6, -0.6);
+
+            // Tie (Red)
+            const tie = new THREE.Mesh(new THREE.BoxGeometry(0.6, 2, 0.1), new THREE.MeshStandardMaterial({ color: 0xD32F2F }));
+            tie.position.set(0, 4.5, 0.65);
+            tie.rotation.z = 0.1;
 
             // Head
-            const head = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.8, 1.8), new THREE.MeshStandardMaterial({ color: 0x7cb342 }));
-            head.position.set(0, 7, 0);
+            const head = new THREE.Mesh(new THREE.BoxGeometry(2, 2.2, 1.8), skinMat);
+            head.position.set(0, 7.3, 0.2); // Leaning forward slightly
+
+            // Eyes
+            const eyeGeo = new THREE.SphereGeometry(0.35);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const pupilMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+
+            const lEye = new THREE.Mesh(eyeGeo, eyeMat);
+            lEye.position.set(-0.5, 7.5, 1.1);
+            const lPupil = new THREE.Mesh(new THREE.SphereGeometry(0.12), pupilMat);
+            lPupil.position.set(0, 0, 0.3);
+            lEye.add(lPupil);
+
+            const rEye = new THREE.Mesh(new THREE.SphereGeometry(0.45), eyeMat); // Bigger right eye
+            rEye.position.set(0.5, 7.5, 1.1);
+            const rPupil = new THREE.Mesh(new THREE.SphereGeometry(0.15), pupilMat);
+            rPupil.position.set(0, 0, 0.4);
+            rEye.add(rPupil);
+
+            // Mouth / Jaw
+            const jaw = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.6, 1.4), skinMat);
+            jaw.position.set(0, 6.2, 0.3);
 
             // Arms
-            const lArm = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2.5, 0.8), new THREE.MeshStandardMaterial({ color: 0x5d4037 }));
-            lArm.position.set(-1.4, 5.5, 1);
-            lArm.rotation.x = -Math.PI / 2; // Point forward
+            const lArm = new THREE.Mesh(new THREE.BoxGeometry(0.7, 3, 0.7), coatMat);
+            lArm.position.set(-1.6, 5.8, 0.8);
+            lArm.rotation.x = -Math.PI / 2.5; // Hosting forward
 
-            const rArm = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2.5, 0.8), new THREE.MeshStandardMaterial({ color: 0x5d4037 }));
-            rArm.position.set(1.4, 5.5, 1);
-            rArm.rotation.x = -Math.PI / 2;
+            const rArm = new THREE.Mesh(new THREE.BoxGeometry(0.7, 3, 0.7), coatMat);
+            rArm.position.set(1.6, 5.8, 0.8);
+            rArm.rotation.x = -Math.PI / 2.5;
 
-            g.add(lLeg, rLeg, torso, head, lArm, rArm);
+            // Hands
+            const lHand = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 0.8), skinMat);
+            lHand.position.set(0, -1.8, 0);
+            lArm.add(lHand);
+
+            const rHand = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 0.8), skinMat);
+            rHand.position.set(0, -1.8, 0);
+            rArm.add(rHand);
+
+            g.add(lLeg, rLeg, lShoe, rShoe, torso, coatBack, tie, head, lEye, rEye, jaw, lArm, rArm);
             return g;
         }
 
         // --- SCENE INIT ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x333333);
+        scene.background = new THREE.Color(0x87CEEB); // Sky Blue
         const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 60, 50);
-        camera.lookAt(0, 0, 0);
 
         const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('game-canvas'), antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -366,63 +779,310 @@
         scene.add(light);
         scene.add(new THREE.AmbientLight(0xffffff, 0.4));
 
-        // Selector / Ghost
+        // Selector
         const selector = new THREE.Mesh(
             new THREE.BoxGeometry(CONFIG.TILE_SIZE, 0.5, CONFIG.TILE_SIZE),
             new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 })
         );
-        scene.add(selector);
+        // Don't add selector yet
 
-        // --- GRID GENERATION ---
-        // We create a single mesh for the ground? No, individual tiles for clicking is easier for logic
-        const tileGeo = new THREE.BoxGeometry(CONFIG.TILE_SIZE - 0.5, 1, CONFIG.TILE_SIZE - 0.5);
-        const matLight = new THREE.MeshStandardMaterial({ color: 0x81C784 });
-        const matDark = new THREE.MeshStandardMaterial({ color: 0x66BB6A });
+        // --- MENU GENERATION ---
+        function createLabel(text, w, h, size = 40, color = "#fff", bg = "#555") {
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = color;
+            ctx.font = `bold ${size}px Courier New`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, w / 2, h / 2);
+            const tex = new THREE.CanvasTexture(canvas);
+            return new THREE.MeshBasicMaterial({ map: tex });
+        }
 
-        for (let x = 0; x < CONFIG.GRID_W; x++) {
-            for (let z = 0; z < CONFIG.GRID_H; z++) {
-                const isDark = (x + z) % 2 === 0;
-                const tile = new THREE.Mesh(tileGeo, isDark ? matDark : matLight);
+        function initMenu() {
+            state.scene = 'MENU';
 
-                // Position: Center grid at 0,0
-                const px = (x - CONFIG.GRID_W / 2 + 0.5) * CONFIG.TILE_SIZE;
-                const pz = (z - CONFIG.GRID_H / 2 + 0.5) * CONFIG.TILE_SIZE;
+            // Camera POS for Menu
+            camera.position.set(0, 15, 30);
+            camera.lookAt(0, 5, 0);
 
-                tile.position.set(px, -0.5, pz);
-                tile.userData = { isTile: true, gx: x, gz: z };
-                tile.receiveShadow = true;
+            // 1. Background Grass hill
+            const hill = new THREE.Mesh(new THREE.SphereGeometry(60, 32, 32), new THREE.MeshStandardMaterial({ color: 0x4caf50 }));
+            hill.position.y = -60;
+            scene.add(hill);
 
-                scene.add(tile);
-                objects.tiles.push(tile);
+            // 2. Gravestone
+            const stoneGeo = new THREE.BoxGeometry(12, 16, 2);
+            const stoneMat = new THREE.MeshStandardMaterial({ color: 0x757575 });
+            const grave = new THREE.Mesh(stoneGeo, stoneMat);
+            grave.position.set(5, 7, 0);
+            grave.rotation.y = -0.3;
+            scene.add(grave);
+
+            // Header "PvP 3D"
+            const title = new THREE.Mesh(new THREE.BoxGeometry(10, 3, 0.2), createLabel("ADVENTURE", 512, 128, 80, "#fff", "#333"));
+            title.position.set(0, 5, 1.1);
+            grave.add(title);
+            objects.menuButtons.push({ mesh: title, action: 'HOST' });
+
+            // Client Button
+            const joinBtn = new THREE.Mesh(new THREE.BoxGeometry(10, 3, 0.2), createLabel("JOIN GAME", 512, 128, 80, "#fff", "#5d4037"));
+            joinBtn.position.set(0, 1, 1.1);
+            grave.add(joinBtn);
+            objects.menuButtons.push({ mesh: joinBtn, action: 'JOIN' });
+
+            // 3. Wooden Sign (Welcome)
+            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 20), new THREE.MeshStandardMaterial({ color: 0x5d4037 }));
+            pole.position.set(-15, 0, 0);
+            scene.add(pole);
+
+            const sign = new THREE.Mesh(new THREE.BoxGeometry(12, 8, 1), new THREE.MeshStandardMaterial({ color: 0x8d6e63 }));
+            sign.position.set(0, 8, 0);
+            sign.rotation.z = 0.1;
+            pole.add(sign);
+
+            const label = new THREE.Mesh(new THREE.PlaneGeometry(10, 2), createLabel("WELCOME BACK:", 512, 100, 60, "#0f0", "#8d6e63"));
+            label.position.set(0, 2, 0.6);
+            sign.add(label);
+
+            // 4. Almanac Book (On the ground)
+            const bookGeo = new THREE.BoxGeometry(6, 1, 8);
+            const bookMat = new THREE.MeshStandardMaterial({ color: 0x795548 });
+            // Simple cover texture simulation
+            const book = new THREE.Mesh(bookGeo, bookMat);
+            book.position.set(-5, 0.5, 8);
+            book.rotation.y = 0.5;
+            scene.add(book);
+
+            const bookLabel = new THREE.Mesh(new THREE.PlaneGeometry(5, 2), createLabel("ALMANAC", 256, 100, 50, "#ffd700", "#795548"));
+            bookLabel.rotation.x = -Math.PI / 2;
+            bookLabel.position.set(0, 0.51, 0);
+            book.add(bookLabel);
+
+            objects.menuButtons.push({ mesh: book, action: 'ALMANAC' });
+            objects.menuButtons.push({ mesh: bookLabel, action: 'ALMANAC' });
+
+            renderer.render(scene, camera);
+        }
+
+        // Initialize Menu Immediately
+        initMenu();
+
+        // --- GRID GENERATION (Moved to startGame) ---
+        function createWorld() {
+            // Clear Menu
+            while (scene.children.length > 0) {
+                const obj = scene.children[0];
+                scene.remove(obj);
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) {
+                    if (Array.isArray(obj.material)) {
+                        obj.material.forEach(m => m.dispose());
+                    } else {
+                        obj.material.dispose();
+                    }
+                }
             }
+            objects.menuButtons = []; // Clear menu buttons
+
+            // Re-add lights
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+            scene.background = new THREE.Color(0x333333);
+            scene.add(selector);
+
+            // Re-create Grid
+            const tileGeo = new THREE.BoxGeometry(CONFIG.TILE_SIZE - 0.5, 1, CONFIG.TILE_SIZE - 0.5);
+            const matLight = new THREE.MeshStandardMaterial({ color: 0x81C784 });
+            const matDark = new THREE.MeshStandardMaterial({ color: 0x66BB6A });
+
+            for (let x = 0; x < CONFIG.GRID_W; x++) {
+                for (let z = 0; z < CONFIG.GRID_H; z++) {
+                    const isDark = (x + z) % 2 === 0;
+                    const tile = new THREE.Mesh(tileGeo, isDark ? matDark : matLight);
+                    const px = (x - CONFIG.GRID_W / 2 + 0.5) * CONFIG.TILE_SIZE;
+                    const pz = (z - CONFIG.GRID_H / 2 + 0.5) * CONFIG.TILE_SIZE;
+                    tile.position.set(px, -0.5, pz);
+                    tile.userData = { isTile: true, gx: x, gz: z };
+                    tile.receiveShadow = true;
+                    scene.add(tile);
+                    objects.tiles.push(tile);
+                }
+            }
+
+            // Camera for Game
+            camera.position.set(0, 60, 50);
+            camera.lookAt(0, 0, 0);
         }
 
         // --- GAME LOGIC ---
 
-        function startGame(asHost) {
-            state.active = true;
-            state.isHost = asHost;
-            myName = document.getElementById('nickname').value || "Player";
+        function showLevelSelect() {
+            // If we are in MENU 3D mode, hitting Adventure triggers this
+            document.getElementById('level-select-screen').classList.remove('hidden');
+            document.getElementById('nickname').style.display = 'none'; // Hide the 3D overlay input
+        }
 
-            document.getElementById('start-menu').classList.add('hidden');
+        function hideLevelSelect() {
+            document.getElementById('level-select-screen').classList.add('hidden');
+            document.getElementById('nickname').style.display = 'block'; // Show input again
+        }
+
+        // --- ALMANAC LOGIC ---
+        function showAlmanac() {
+            document.getElementById('almanac-screen').classList.remove('hidden');
+            document.getElementById('nickname').style.display = 'none';
+            switchAlmanacTab('plants');
+        }
+
+        function hideAlmanac() {
+            document.getElementById('almanac-screen').classList.add('hidden');
+            document.getElementById('nickname').style.display = 'block';
+        }
+
+        function switchAlmanacTab(tab) {
+            const grid = document.getElementById('almanac-grid');
+            grid.innerHTML = '';
+
+            let list = tab === 'plants' ? ALL_PLANTS : ALL_ZOMBIES;
+
+            list.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'plant-card'; // Reuse style
+                div.style.margin = '0';
+                div.onclick = () => selectAlmanacEntry(item);
+                div.innerHTML = `
+                    <div style="width:30px; height:30px; background:${item.color}; border-radius:50%; margin-bottom:5px;"></div>
+                    <span style="font-size:10px;">${item.name}</span>
+                `;
+                grid.appendChild(div);
+            });
+            // Auto Select first
+            if (list.length > 0) selectAlmanacEntry(list[0]);
+        }
+
+        function selectAlmanacEntry(item) {
+            document.getElementById('almanac-title').innerText = item.name;
+            // Preview
+            const preview = document.getElementById('almanac-preview');
+            preview.style.background = '#81c784'; // Lawn bg
+            preview.innerHTML = `<div style="width:50px; height:50px; background:${item.color}; border-radius:50%; box-shadow: 5px 5px 10px rgba(0,0,0,0.5);"></div>`;
+
+            document.getElementById('almanac-stats').innerHTML = item.stats;
+            document.getElementById('almanac-desc').innerHTML = `
+                ${item.desc}
+                <br><br>
+                <i style="font-size:16px; color:#5d4037;">"${item.flavor}"</i>
+            `;
+        }
+
+        function selectLevel(lvl) {
+            if (lvl === 'night') {
+                // Settings applied in createWorld later
+            }
+            // Go to Seeds
+            document.getElementById('level-select-screen').classList.add('hidden');
+            showSeedChooser();
+        }
+
+        // --- SEED CHOOSER LOGIC ---
+        function showSeedChooser() {
+            state.scene = 'SEEDS';
+            document.getElementById('seed-chooser-screen').classList.remove('hidden');
+            renderSeedView();
+        }
+
+        function toggleSeed(id) {
+            if (selectedDeck.includes(id)) {
+                selectedDeck = selectedDeck.filter(x => x !== id);
+            } else {
+                if (selectedDeck.length < 6) selectedDeck.push(id);
+            }
+            renderSeedView();
+        }
+
+        function renderSeedView() {
+            const selCont = document.getElementById('selected-seeds-container');
+            const libCont = document.getElementById('seed-library-container');
+
+            // Render Selected
+            selCont.innerHTML = selectedDeck.map(id => {
+                const p = ALL_PLANTS.find(x => x.id === id);
+                return `<div onclick="toggleSeed('${id}')" class="plant-card" style="margin:0; border-color:#00ff00;">
+                            <div style="width:20px; height:20px; background:${p.color}; border-radius:50%;"></div>
+                            <span>${p.name}</span>
+                            <span class="cost">${p.cost}</span>
+                        </div>`;
+            }).join('');
+
+            // Render Library
+            libCont.innerHTML = ALL_PLANTS.map(p => {
+                const isSel = selectedDeck.includes(p.id);
+                return `<div onclick="toggleSeed('${p.id}')" class="plant-card" style="margin:0; opacity: ${isSel ? 0.5 : 1}; pointer-events: ${isSel ? 'none' : 'auto'}">
+                            <div style="width:20px; height:20px; background:${p.color}; border-radius:50%;"></div>
+                            <span>${p.name}</span>
+                            <span class="cost">${p.cost}</span>
+                        </div>`;
+            }).join('');
+        }
+
+        function confirmSeeds() {
+            if (selectedDeck.length === 0) { alert("Pick at least one plant!"); return; }
+            document.getElementById('seed-chooser-screen').classList.add('hidden');
+            activeTool = selectedDeck[0]; // Auto select first
+            startGame(true);
+        }
+
+        function startGame(asHost) {
+            state.scene = 'GAME'; // Switch mode
+            createWorld(); // Build Game Scene
+
+            // UI Cleanup
+            document.getElementById('nickname').style.display = 'none';
+            document.querySelectorAll('.center-menu').forEach(el => el.classList.add('hidden'));
+
+            // Build Game Controls based on Selection
+            const hud = document.getElementById('hud-slots');
+            hud.innerHTML = selectedDeck.map(id => {
+                const p = ALL_PLANTS.find(x => x.id === id);
+                return `<div class="plant-card" data-type="${id}" onclick="selectPlant('${id}')">
+                    <span>${p.name}</span>
+                    <span class="cost">${p.cost}</span>
+               </div>`;
+            }).join('');
+            // Mark initial selected
+            document.querySelector(`.plant-card[data-type="${activeTool}"]`).classList.add('selected');
+
             document.getElementById('game-controls').classList.remove('hidden');
             document.getElementById('debug-msg').innerText = "Game Active";
 
+            state.isHost = asHost;
+            const myNameVal = document.getElementById('nickname').value || "Player";
+
             if (asHost) {
-                state.players.push({ name: myName, id: 'HOST' });
-                peer = new Peer();
-                peer.on('open', id => console.log('Host ID:', id));
-                peer.on('connection', c => {
-                    connections.push(c);
-                    c.on('data', d => handlePacket(c, d));
-                });
+                if (!state.players.find(p => p.id === 'HOST')) {
+                    state.players.push({ name: myNameVal, id: 'HOST' });
+                }
+                if (!peer) { // Init peer only if not already done (re-entry safety)
+                    peer = new Peer();
+                    peer.on('open', id => console.log('Host ID:', id));
+                    peer.on('connection', c => {
+                        connections.push(c);
+                        c.on('data', d => handlePacket(c, d));
+                    });
+                }
                 requestAnimationFrame(gameLoop);
             } else {
-                const id = document.getElementById('host-id').value;
+                // Client side - simpler path
+                const id = prompt("Enter Host ID:");
+                if (!id) return;
                 peer = new Peer();
                 conn = peer.connect(id);
                 conn.on('open', () => {
-                    conn.send({ type: 'JOIN', name: myName });
+                    conn.send({ type: 'JOIN', name: myNameVal });
                 });
                 conn.on('data', d => handlePacket(null, d));
                 requestAnimationFrame(renderLoop);
@@ -460,7 +1120,22 @@
             mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
             mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
 
-            if (!state.active) return;
+            if (state.scene === 'MENU') {
+                raycaster.setFromCamera(mouse, camera);
+                const hits = raycaster.intersectObjects(objects.menuButtons.map(b => b.mesh));
+                // Reset colors
+                objects.menuButtons.forEach(b => b.mesh.scale.set(1, 1, 1));
+                if (hits.length > 0) {
+                    hits[0].object.scale.set(1.1, 1.1, 1.1); // Hover effect
+                    document.body.style.cursor = 'pointer';
+                } else {
+                    document.body.style.cursor = 'default';
+                }
+                renderer.render(scene, camera);
+                return;
+            }
+
+            if (state.scene !== 'GAME') return;
 
             raycaster.setFromCamera(mouse, camera);
             const hits = raycaster.intersectObjects(objects.tiles);
@@ -481,9 +1156,23 @@
 
         window.addEventListener('click', e => {
             if (e.target.closest('.interactive')) return; // Ignore UI clicks
-            if (!state.active) return;
 
             raycaster.setFromCamera(mouse, camera);
+
+            // MENU MODE CLICK
+            if (state.scene === 'MENU') {
+                const hits = raycaster.intersectObjects(objects.menuButtons.map(b => b.mesh));
+                if (hits.length > 0) {
+                    const btn = objects.menuButtons.find(b => b.mesh === hits[0].object);
+                    if (btn.action === 'HOST') showLevelSelect();
+                    if (btn.action === 'JOIN') startGame(false); // Triggers prompt
+                    if (btn.action === 'ALMANAC') showAlmanac();
+                }
+                return;
+            }
+
+            // GAME MODE CLICK
+            if (state.scene !== 'GAME') return;
 
             // 1. CLICK SUN
             // Find sun meshes
@@ -582,13 +1271,9 @@
         window.selectPlant = (t) => {
             activeTool = t;
             document.querySelectorAll('.plant-card').forEach(e => e.classList.remove('selected'));
-            // Find specific card (lazy select)
-            const cards = document.querySelectorAll('.plant-card');
-            if (t === 'peashooter') cards[0].classList.add('selected');
-            if (t === 'sunflower') cards[1].classList.add('selected');
-            if (t === 'wallnut') cards[2].classList.add('selected');
-            if (t === 'snowpea') cards[3].classList.add('selected');
-            if (t === 'potatomine') cards[4].classList.add('selected');
+            // Dynamic check
+            const card = document.querySelector(`.plant-card[data-type="${t}"]`);
+            if (card) card.classList.add('selected');
         }
 
         // --- LOOPS ---
@@ -700,6 +1385,13 @@
                 } else {
                     z.x -= dt * 5 * speedMult; // Move
                 }
+
+                // Game Over Check
+                if (z.x < -((CONFIG.GRID_W / 2) * CONFIG.TILE_SIZE) - 2) {
+                    state.active = false;
+                    document.getElementById('game-over-screen').classList.remove('hidden');
+                    // Broadcast Game Over?
+                }
             });
 
             // 3. PROJECTILES
@@ -790,22 +1482,77 @@
 
                         // Arming visual for mine
                         if (ent.type === 'potatomine') {
-                            // Assuming red light is child 1
-                            if (mesh.children[1]) {
-                                const since = performance.now() - (ent.plantTime || 0); // Client perf now might differ, this is visual only approximation or we sync
-                                // Actually better to sync 'armed' state.
-                                // For now just blink?
-                                if (!ent.armed) mesh.children[1].material.color.setHex(Date.now() % 500 < 250 ? 0xff0000 : 0x550000);
-                                else mesh.children[1].material.color.setHex(0xff0000);
+                            const light = mesh.getObjectByName('antennaLight');
+                            if (light) {
+                                if (!ent.armed) {
+                                    // Blink Fast
+                                    light.material.color.setHex(Date.now() % 500 < 250 ? 0xff0000 : 0x550000);
+                                    light.material.emissive.setHex(Date.now() % 500 < 250 ? 0xff0000 : 0x000000);
+                                } else {
+                                    // Armed (Solid Red)
+                                    light.material.color.setHex(0xff0000);
+                                    light.material.emissive.setHex(0xff0000);
+                                }
+                            }
+                        }
+
+                        // Wallnut Wobble
+                        if (ent.type === 'wallnut') {
+                            const body = mesh.getObjectByName('bodyGroup');
+                            if (body) {
+                                const t = Date.now() * 0.001;
+                                body.rotation.z = Math.sin(t) * 0.05; // Gentle sway
+                            }
+                        }
+
+                        // Plant Animations
+                        const time = Date.now() * 0.002;
+                        if (ent.type === 'sunflower') {
+                            const face = mesh.getObjectByName('faceGroup');
+                            if (face) {
+                                face.scale.setScalar(1 + Math.sin(time * 2) * 0.05);
+                                face.rotation.y = Math.sin(time) * 0.1;
+                            }
+                        } else if (ent.type === 'peashooter' || ent.type === 'snowpea') {
+                            const head = mesh.getObjectByName('headGroup');
+                            if (head) {
+                                head.rotation.z = Math.sin(time) * 0.1;
+                                head.rotation.y = Math.sin(time * 0.5) * 0.1;
                             }
                         }
 
                     } else if (type === 'zombie') {
                         mesh.position.set(ent.x, 0, ent.z);
-                        // Blue tint if frozen? Hard with group materials.
-                        // Maybe just slow anim.
+
+                        // Zombie Walk Animation
+                        const time = Date.now() * 0.005;
+                        const lLeg = mesh.getObjectByName('lLeg');
+                        const rLeg = mesh.getObjectByName('rLeg');
+                        const head = mesh.getObjectByName('headGroup');
+                        const lArm = mesh.getObjectByName('lArm'); // if named
+
+                        // Simple Leg Rotate (Direct mesh rotate if pivot correct, but logic was creating groups earlier)
+                        // Actually I named the MESH 'lLeg' inside 'lLegGroup' in createZombie? 
+                        // Wait, previous step I didn't push the full complex createZombie yet? 
+                        // Ah, I need to ensure the complex createZombie is in first.
+                        // Assuming complex createZombie IS IN:
+                        // It had lLegGroup and rLegGroup.
+
+                        const lLegG = mesh.getObjectByName('lLegGroup');
+                        const rLegG = mesh.getObjectByName('rLegGroup');
+
+                        if (lLegG && rLegG) {
+                            lLegG.rotation.x = Math.sin(time) * 0.6;
+                            rLegG.rotation.x = Math.sin(time + Math.PI) * 0.6;
+                        }
+                        if (head) {
+                            head.rotation.y = Math.sin(time * 0.5) * 0.1;
+                            head.rotation.z = Math.sin(time * 0.2) * 0.05;
+                        }
+
                     } else if (type === 'sun') {
                         mesh.position.set(ent.x, ent.y, ent.z);
+                        mesh.rotation.y += 0.02;
                     } else if (type === 'projectile') {
                         mesh.position.set(ent.x, 3, ent.z);
                     }
