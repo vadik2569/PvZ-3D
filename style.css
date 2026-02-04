@@ -1,0 +1,174 @@
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Rubik:wght@400;700&display=swap');
+
+:root {
+    --accent-green: #4ade80;
+    --accent-yellow: #facc15;
+    --dark-overlay: rgba(0, 0, 0, 0.7);
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Rubik', sans-serif;
+    background-color: #1a1a1a;
+    color: white;
+}
+
+#game-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Let clicks pass through to canvas */
+}
+
+#score-board {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    gap: 20px;
+}
+
+.resource {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 24px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+.resource .icon {
+    font-size: 28px;
+}
+
+#sun-count {
+    color: var(--accent-yellow);
+}
+
+#plant-selector {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 15px;
+    pointer-events: auto; /* Re-enable clicks for cards */
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.plant-card {
+    width: 100px;
+    height: 140px;
+    background: linear-gradient(135deg, #2d3748, #1a202c);
+    border-radius: 12px;
+    border: 2px solid #4a5568;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+}
+
+.plant-card.selected {
+    border-color: var(--accent-green);
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(74, 222, 128, 0.3);
+}
+
+.plant-card:hover {
+    transform: translateY(-5px);
+    border-color: #cbd5e0;
+}
+
+.card-inner {
+    padding: 10px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.plant-card .cost {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--accent-yellow);
+    font-weight: bold;
+}
+
+.plant-card .name {
+    font-size: 12px;
+    text-align: center;
+    margin-bottom: 5px;
+    color: #e2e8f0;
+}
+
+/* Specific Card Styles (Mockup colors) */
+.plant-card[data-type="peashooter"] { background: linear-gradient(135deg, #2f855a, #22543d); }
+.plant-card[data-type="sunflower"] { background: linear-gradient(135deg, #b7791f, #975a16); }
+.plant-card[data-type="wallnut"] { background: linear-gradient(135deg, #744210, #553c9a); } /* Just a dark brownish */
+
+#game-over-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    pointer-events: auto;
+}
+
+#game-over-screen.hidden {
+    display: none;
+}
+
+#game-over-screen h1 {
+    font-family: 'Creepster', cursive;
+    font-size: 80px;
+    color: #e53e3e;
+    text-shadow: 0 0 20px rgba(229, 62, 62, 0.5);
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+#game-over-screen button {
+    padding: 15px 40px;
+    font-size: 24px;
+    font-family: 'Rubik', sans-serif;
+    background: var(--accent-green);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    color: #064e3b;
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+
+#game-over-screen button:hover {
+    transform: scale(1.1);
+}
